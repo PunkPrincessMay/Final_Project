@@ -32,7 +32,7 @@ function changeChannel(e){
                 <!-- When adding or editing ingredients, allow the user to select from a list of available pantry ingredients-->
                 <br>
                 <label>Ingredients</label>
-                <select id="ingredientSelect" name="ingredientSelect" multiple size="5"></select>
+                <select id="ingredientSelect" name="ingredientSelect" multiple size="7"></select>
                 <br>
                 <input type="number" id="quantity" step="0.01" min="0" placeholder="Quantity">
                 <select id="unit-select">
@@ -110,7 +110,7 @@ $("#recipeForm").on("submit", async function (e){
     // Hide both sections initially
     measuredSection.classList.add('hidden');
     discreteSection.classList.add('hidden');
-    recipeEntries = {
+    recipeEntry = {
         name,
         instructions,
         picture,
@@ -163,8 +163,8 @@ $("#recipeForm").on("submit", async function (e){
             document.getElementById("instructions").textContent = "";
             document.getElementById("ingredient-list").innerHTML = "";
         } else {    
-        for (let i = 0; i < recipeEntries.length; i++) {
-            const entry = recipeEntries[i];
+        for (let i = 0; i < recipeEntrys.length; i++) {
+            const entry = recipeEntrys[i];
         document.getElementById("recipe-title").textContent = entry.name;
         document.getElementById("recipe-image").src = entry.picture || "";
         document.getElementById("instructions").textContent = entry.instructions;
