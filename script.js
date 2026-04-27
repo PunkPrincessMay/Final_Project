@@ -1,1 +1,68 @@
+//Key Features:
+// Hosted App
+// Git Repository
+// CRUD Functionality for Recipes:
+// Create, read, update, and delete recipes.
+// Use Local Storage to store these recipes after the app has been closed.
+localStorage.setItem();
+// Each recipe's information should include:
+// Name: A string (required).
+// Instructions: A string (required).
+// Image URL: A string (optional; if not provided, handle gracefully like showing no image).
+// 0 to many ingredients:
+// When adding or editing, allow the user to select from available pantry ingredients.
+// Each recipe ingredient entry includes: an ingredient ID reference (from pantry), quantity (a number, supporting decimals), and unit (selected from a dropdown with options: unit, tsp, tbsp, cup, ml, g, oz).
+// Auto-lock the unit to "unit" and disable the unit select if the chosen ingredient is of discrete type (e.g., eggs). This is because it doesn’t make sense to use 1 tsp of eggs in a recipe.
+// Viewing a recipe:
+// Display a dedicated page with the recipe title, image (if provided), list of needed ingredients with their quantities and units.
+// For each ingredient, also show "have X" remaining in the pantry (in the ingredient's canonical units).
+// Highlight insufficient ingredients: Color the name and needed quantity red and bold if the pantry amount is insufficient.
+// Include the full instructions.
+// Add scale buttons (½x, 1×, 2×) that dynamically re-render the ingredient list with scaled quantities (and re-check/re-highlight sufficiency based on the scale).
+// Include a "Cook Recipe" button that uses the current scale for deductions and reduces the pantry ingredients by the scaled quantities.
+// CRUD Functionality for Ingredients:
+// Create, read, update, and delete ingredients (stored in the pantry).
+// Store the ingredients in Local Storage so the data is stored after the app is closed.
+// Each ingredient's information should include:
+// Name: A string
+// Type: A select dropdown with "measured" (e.g., flour) or "discrete" (e.g., eggs); dynamically show/hide relevant form sections based on the selected type.
+// For discrete type: Canonical quantity as an integer count (e.g., number of units/items; no unit conversion needed, treat as "unit").
+// E.g. Eggs. If you have a dozen eggs you would enter 12 as the canonical quantity.
+// For measured type: Canonical quantity stored in a chosen canonical cooking unit (select from tsp, tbsp, cup, ml, g, oz).
+// E.g. If you have flour, typically it is measured in cups. When you buy a bag of flour it comes in bags of 5 ½ cups. You would enter 5.5 as the canonical quantity and the canonical unit would be cups.
+// When adding or topping up, support inputting package quantity:
+// If using servings: Multiply package qty by serving size (amount and unit, converted to canonical unit).
+// If using direct package unit (e.g., g, oz, ml): Convert the package qty from that unit to the canonical unit.
+// Adding/topping up ingredients:
+// The edit form should be titled "Top Up: [name]" for existing ingredients.
+// Add the new package amount to the existing canonical quantity after any necessary conversion.
+// Format quantities nicely in displays: Use fractions like 1/8, 1/4, 1/3, 1/2, 2/3, 3/4 where the decimal approximates them (e.g., 0.25 as 1/4); otherwise, use decimals or integers.
+// Unit conversion:
+// Implement a unit conversion function
+// Support: tsp/tbsp/cup (volume based on tsp equivalents), ml (volume ml-based), g/oz (weight), and unit (for discrete).
+// Return null if units are incompatible (e.g., can't convert volume to weight).
+// Ingredient List Enhancements:
+// Filter: Add a text input at the top to search/filter the list by name (case-insensitive, real-time as user types).
+// Sorting: Sort the list by quantity ascending (low to high).
+// Visual cues: Color the name red and make the quantity bold if low stock (<3 units for discrete, or <1 in canonical unit for measured).
+// Cooking a Recipe:
+// The "Cook Recipe" button deducts the appropriate (scaled) amounts from the pantry after:
+// Checking availability: Alert if any ingredient is missing, insufficient, or has a unit mismatch that can't be converted.
+// Converting recipe units to the ingredient's canonical unit.
+// Update the canonical quantity in pantry (Make sure you stay >=0 if it would go negative).
+// Show a flash success message (e.g., "Meal cooked — pantry updated!") on successful cook.This can be a modal or pop-up.
+// App Structure and Tech:
+// Build as a Single Page App (SPA) that re-renders content based on the selected page/view.
+// Navigation: Buttons for Home, Recipes, and Ingredients.
+// Home page: A simple welcome message, e.g., "Manage your pantry and recipes. Cook a recipe to automatically subtract ingredients."
+// Storage: Use localStorage with keys "ingredients" and "recipes".
+// IDs: Generate unique IDs using crypto.randomUUID() (or something of your choosing).
+// Styling: Something you would be proud to show someone. I don’t care as long as a reasonable person would think you put effort into it. CSS is a 3700 topic, not this class, so I don’t care if you can’t explain it. 🙂
+// Flash messages: A div for success/error notifications (fixed top-right, colored background, fade out after a few seconds) or a modal. Your choice.
+// UX Polish:
+// Required fields on forms.
+// Default values (e.g., qty=1 in recipe ingredients).
+// Tips in forms (e.g., small text explaining serving size or discrete vs. measured).
+// Pluralization (e.g., "unit" vs. "units" based on count).
+// Other niceties: Round discrete quantities, handle zero/negative gracefully (i.e. Your app shouldn’t break)
 
