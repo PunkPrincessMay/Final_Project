@@ -1,68 +1,270 @@
-//Key Features:
-// Hosted App
-// Git Repository
-// CRUD Functionality for Recipes:
-// Create, read, update, and delete recipes.
-// Use Local Storage to store these recipes after the app has been closed.
-localStorage.setItem();
-// Each recipe's information should include:
-// Name: A string (required).
-// Instructions: A string (required).
-// Image URL: A string (optional; if not provided, handle gracefully like showing no image).
-// 0 to many ingredients:
-// When adding or editing, allow the user to select from available pantry ingredients.
-// Each recipe ingredient entry includes: an ingredient ID reference (from pantry), quantity (a number, supporting decimals), and unit (selected from a dropdown with options: unit, tsp, tbsp, cup, ml, g, oz).
-// Auto-lock the unit to "unit" and disable the unit select if the chosen ingredient is of discrete type (e.g., eggs). This is because it doesn’t make sense to use 1 tsp of eggs in a recipe.
-// Viewing a recipe:
-// Display a dedicated page with the recipe title, image (if provided), list of needed ingredients with their quantities and units.
-// For each ingredient, also show "have X" remaining in the pantry (in the ingredient's canonical units).
-// Highlight insufficient ingredients: Color the name and needed quantity red and bold if the pantry amount is insufficient.
-// Include the full instructions.
-// Add scale buttons (½x, 1×, 2×) that dynamically re-render the ingredient list with scaled quantities (and re-check/re-highlight sufficiency based on the scale).
-// Include a "Cook Recipe" button that uses the current scale for deductions and reduces the pantry ingredients by the scaled quantities.
-// CRUD Functionality for Ingredients:
-// Create, read, update, and delete ingredients (stored in the pantry).
-// Store the ingredients in Local Storage so the data is stored after the app is closed.
-// Each ingredient's information should include:
-// Name: A string
-// Type: A select dropdown with "measured" (e.g., flour) or "discrete" (e.g., eggs); dynamically show/hide relevant form sections based on the selected type.
-// For discrete type: Canonical quantity as an integer count (e.g., number of units/items; no unit conversion needed, treat as "unit").
-// E.g. Eggs. If you have a dozen eggs you would enter 12 as the canonical quantity.
-// For measured type: Canonical quantity stored in a chosen canonical cooking unit (select from tsp, tbsp, cup, ml, g, oz).
-// E.g. If you have flour, typically it is measured in cups. When you buy a bag of flour it comes in bags of 5 ½ cups. You would enter 5.5 as the canonical quantity and the canonical unit would be cups.
-// When adding or topping up, support inputting package quantity:
-// If using servings: Multiply package qty by serving size (amount and unit, converted to canonical unit).
-// If using direct package unit (e.g., g, oz, ml): Convert the package qty from that unit to the canonical unit.
-// Adding/topping up ingredients:
-// The edit form should be titled "Top Up: [name]" for existing ingredients.
-// Add the new package amount to the existing canonical quantity after any necessary conversion.
-// Format quantities nicely in displays: Use fractions like 1/8, 1/4, 1/3, 1/2, 2/3, 3/4 where the decimal approximates them (e.g., 0.25 as 1/4); otherwise, use decimals or integers.
-// Unit conversion:
-// Implement a unit conversion function
-// Support: tsp/tbsp/cup (volume based on tsp equivalents), ml (volume ml-based), g/oz (weight), and unit (for discrete).
-// Return null if units are incompatible (e.g., can't convert volume to weight).
-// Ingredient List Enhancements:
-// Filter: Add a text input at the top to search/filter the list by name (case-insensitive, real-time as user types).
-// Sorting: Sort the list by quantity ascending (low to high).
-// Visual cues: Color the name red and make the quantity bold if low stock (<3 units for discrete, or <1 in canonical unit for measured).
-// Cooking a Recipe:
-// The "Cook Recipe" button deducts the appropriate (scaled) amounts from the pantry after:
-// Checking availability: Alert if any ingredient is missing, insufficient, or has a unit mismatch that can't be converted.
-// Converting recipe units to the ingredient's canonical unit.
-// Update the canonical quantity in pantry (Make sure you stay >=0 if it would go negative).
-// Show a flash success message (e.g., "Meal cooked — pantry updated!") on successful cook.This can be a modal or pop-up.
-// App Structure and Tech:
-// Build as a Single Page App (SPA) that re-renders content based on the selected page/view.
-// Navigation: Buttons for Home, Recipes, and Ingredients.
-// Home page: A simple welcome message, e.g., "Manage your pantry and recipes. Cook a recipe to automatically subtract ingredients."
-// Storage: Use localStorage with keys "ingredients" and "recipes".
-// IDs: Generate unique IDs using crypto.randomUUID() (or something of your choosing).
-// Styling: Something you would be proud to show someone. I don’t care as long as a reasonable person would think you put effort into it. CSS is a 3700 topic, not this class, so I don’t care if you can’t explain it. 🙂
-// Flash messages: A div for success/error notifications (fixed top-right, colored background, fade out after a few seconds) or a modal. Your choice.
-// UX Polish:
-// Required fields on forms.
-// Default values (e.g., qty=1 in recipe ingredients).
-// Tips in forms (e.g., small text explaining serving size or discrete vs. measured).
-// Pluralization (e.g., "unit" vs. "units" based on count).
-// Other niceties: Round discrete quantities, handle zero/negative gracefully (i.e. Your app shouldn’t break)
+// Name: Katie Summers
+// Description: This is a recipe app that allows users to make recipes depending on the ingredients avaliable in a pantry;
 
+// The home page displays a simple welcome message;
+let channelButtons = document.querySelectorAll(".channel");
+function changeChannel(e){
+    document.querySelector(".channel.active").classList.remove("active");    
+    e.currentTarget.classList.add("active");
+    let selectedChannel = e.currentTarget.getAttribute("data-channel");
+    let currentHTML = "";
+    dataChannel = document.querySelector(".channel.active").getAttribute("data-channel");
+    if (dataChannel === "home") {
+        currentHTML += `
+        <div id="home" class="channel-content active">
+            <h1>Manage your pantry and recipes. Cook a recipe to automatically subtract ingredients.</h1>
+        </div>
+        `;
+    } else if (dataChannel === "recipes") {
+        currentHTML += `
+        <div class="channel-content" id="recipes">
+            <form id="recipeForm">
+                <!--Each recipe's information includes a name, instructions, an optional image url, and zero to many ingredients -->
+                <label>Name of Recipe</label>
+                <input type="text" name="recipeName" placeholder="Type the name of your recipe here" required>
+                <br>
+                <label>Instructions for Recipe</label>
+                <input type="text-area" name="recipeInstructions" placeholder="Type the instructions for your recipe in this box" required>
+                <!-- If not provided, handle gracefully like showing no image-->
+                <br>
+                <label>Image of Dish</label>
+                <input type="text" name="recipePicture" placeholder="If you would like, paste a image URL of the completed recipe">
+                <!-- When adding or editing ingredients, allow the user to select from a list of available pantry ingredients-->
+                <br>
+                <label>Ingredients</label>
+                <select id="ingredientSelect" name="ingredientSelect" multiple></select>
+                <input type="number" id="quantity" step="0.01" min="0" placeholder="Quantity">
+                <select id="unit-select">
+                    <option value="unit">unit</option>
+                    <option value="tsp">tsp</option>
+                    <option value="tbsp">tbsp</option>
+                    <option value="cup">cup</option>
+                    <option value="ml">ml</option>
+                    <option value="g">g</option>
+                    <option value="oz">oz</option>
+                </select>
+                <form id="ingredientForm">
+  <label for="type">Ingredient Type:</label>
+  <select id="type" name="type">
+    <option value="">-- Select Type --</option>
+    <option value="measured">Measured (e.g., flour)</option>
+    <option value="discrete">Discrete (e.g., eggs)</option>
+  </select>
+
+  <!-- Measured section -->
+  <div id="measuredSection" class="hidden">
+    <label for="measuredQty">Quantity:</label>
+    <input type="number" id="measuredQty" name="measuredQty" step="0.01" min="0">
+    
+    <label for="unit">Unit:</label>
+    <select id="unit" name="unit">
+      <option value="grams">Grams</option>
+      <option value="cups">Cups</option>
+      <option value="ml">Milliliters</option>
+    </select>
+  </div>
+
+  <!-- Discrete section -->
+  <div id="discreteSection" class="hidden">
+    <label for="discreteQty">Count:</label>
+    <input type="number" id="discreteQty" name="discreteQty" step="1" min="0">
+  </div>
+                <button type="submit">Add Recipe</button>
+                <br>
+                <hr>
+                <div id="recipes">
+                </div>
+            </form>
+        </div>
+        `;
+    } else if (dataChannel === "ingredients") {
+        currentHTML += `
+        <div class="channel-content" id="ingredients">
+            <form id="ingredientForm">
+                <!-- Each ingredient's information includes a name (string) and a quantity-->
+                <!-- Adding/topping up ingredients -->
+                <label>Top Up: ${ingredient.name}</label>
+            </form>
+        </div>`
+    };
+    const div = $("#placeholder");
+    div.html(currentHTML);
+};
+channelButtons.forEach((button) => {
+    button.addEventListener("click", changeChannel);
+});
+$("#recipeForm").on("submit", async function (e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const name = formData.get.innerText("recipeName");
+    const instruct = formData.get.innerText("recipeInstructions");
+    const picture = formData.get.innerText("recipePicture");
+    let recipeEntry = {
+        name,
+        instruct,
+        picture,
+    };
+      const typeSelect = document.getElementById('type');
+  const measuredSection = document.getElementById('measuredSection');
+  const discreteSection = document.getElementById('discreteSection');
+
+  typeSelect.addEventListener('change', function () {
+    // Hide both sections initially
+    measuredSection.classList.add('hidden');
+    discreteSection.classList.add('hidden');
+
+    // Show the relevant section based on selection
+    if (this.value === 'measured') {
+      measuredSection.classList.remove('hidden');
+    } else if (this.value === 'discrete') {
+      discreteSection.classList.remove('hidden');
+    }
+  });
+    // Use localStorage to store these recipes after the app has been closed;
+    const logs = JSON.parse(localStorage.getItem("recipeLogs") || "[]");
+    logs.push(recipeEntry);
+    localStorage.setItem("recipeLogs", JSON.stringify(logs));
+    let recipesHTML = "";
+    for (let i = 0; i < logs.length; i++) {
+        const log = logs[i];
+        recipesHTML += `
+        <div class="scale-buttons">
+            <button data-scale="0.5">1/2</button>
+            <button data-scale="1">1</button>
+            <button data-scale="2">2</button>
+        </div>
+        <ul id="ingredient-list">
+        </ul>
+        <button id="cook-btn">Cook Recipe</button>
+        <div class="recipe-entry">
+            <p><strong>Recipe #${i + 1}</strong></p>
+            <p>${log.name}</p>
+            <p>${log.instruct}</p>
+        `
+        // If not provided, handle gracefully like showing no image;
+        if (log.picture !== "") {
+            recipesHTML += `
+            <img src="${log.picture}" alt="image of recipe">`
+        }  
+    }
+    function renderRecipes() {
+        document.getElementById("recipe-title").textContent = log.name;
+        document.getElementById("recipe-image").src = log.picture || "";
+        document.getElementById("instructions").textContent = log.instruct;
+        const list = document.getElementById("ingredient-list");
+        list.innerHTML = "";
+        log.ingredients.forEach(ing => {
+            const scaledQty = ing.qty * currentScale;
+            const li = document.createElement("li");
+            li.textContent = `${ing.name}: ${scaledQty}${ing.unit} (have ${have}${ing.unit})`;
+            if (have < scaledQty) {
+                li.classList.add("insufficient");
+            }
+            list.appendChild(li);
+        });
+    }
+    document.querySelectorAll(".scale-buttons button").forEach(btn => {
+        btn.addEventListener("click", () => {
+            currentScale = parseFloat(btn.getAttribute("data-scale"));
+            renderRecipes();
+        });
+    });
+    document.getElementById("cook-btn").addEventListener("click", () => {
+      recipe.ingredients.forEach(ing => {
+        const scaledQty = ing.qty * currentScale;
+        if (ingredient[ing.name] !== undefined) {
+          ingredient[ing.name] = Math.max(0, ingredient[ing.name] - scaledQty);
+        }
+      });
+      renderRecipe();
+    });
+
+    renderRecipe();
+    document.querySelector("#recipes").innerHTML = recipesHTML;
+    const ingredients = [
+        { name: "Flour", quantity: 2, unit: "cup" },
+        { name: "Sugar", quantity: 1, unit: "cup" },
+        { name: "Eggs", quantity: 3, unit: "unit" },
+        { name: "Milk", quantity: 500, unit: "ml" },
+        { name: "Apples", type: "discrete" },
+    ];
+    const ingredientSelect = document.getElementById("ingredient-select");
+    const unitSelect = document.getElementById("unit-select");
+
+    // Populate ingredient dropdown
+    ingredients.forEach(item => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = item.name;
+      ingredientSelect.appendChild(option);
+    });
+
+    // Handle ingredient selection change
+    ingredientSelect.addEventListener("change", () => {
+      const selectedId = parseInt(ingredientSelect.value, 10);
+      const selectedIngredient = ingredients.find(item => item.id === selectedId);
+
+      if (selectedIngredient.type === "discrete") {
+        unitSelect.value = "unit";
+        unitSelect.disabled = true;
+      } else {
+        unitSelect.disabled = false;
+      }
+    });
+
+    // Trigger initial check
+    ingredientSelect.dispatchEvent(new Event("change"));
+
+    // Save data to localStorage
+function saveData(key, data) {
+    if (typeof key !== "string") throw new Error("Key must be a string");
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (err) {
+        console.error("Error saving to localStorage:", err);
+    }
+}
+
+// Load data from localStorage
+function loadData(key) {
+    if (typeof key !== "string") throw new Error("Key must be a string");
+    try {
+        const stored = localStorage.getItem(key);
+        return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+        console.error("Error reading from localStorage:", err);
+        return [];
+    }
+}
+
+// Generate a unique ID
+function generateId() {
+    if (crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // Fallback if crypto.randomUUID is not supported
+    return 'id-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
+}
+
+// Example: Adding an ingredient
+function addIngredient(name) {
+    const ingredients = loadData("ingredients");
+    ingredients.push({ id: generateId(), name });
+    saveData("ingredients", ingredients);
+}
+
+// Example: Adding a recipe
+function addRecipe(title, ingredientIds) {
+    const recipes = loadData("recipes");
+    recipes.push({ id: generateId(), title, ingredients: ingredientIds });
+    saveData("recipes", recipes);
+}
+
+// Usage
+addIngredient("Tomato");
+addIngredient("Cheese");
+addRecipe("Pizza", loadData("ingredients").map(i => i.id));
+
+console.log("Ingredients:", loadData("ingredients"));
+console.log("Recipes:", loadData("recipes"));
+});
